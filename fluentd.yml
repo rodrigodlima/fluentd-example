@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: fluentd
-  namespace: illumni-app
+  namespace: kube-system
   labels:
     app: fluentd
 ---
@@ -10,7 +10,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: fluentd
-  namespace: illumni-app
+  namespace: kube-system
   labels:
     app: fluentd
 rules:
@@ -35,38 +35,47 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: fluentd
-  namespace: illumni-app
+  namespace: kube-system
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentd-config
-  namespace: illumni-app
+  namespace: kube-system
 data:
   fluent.conf: |
+    <match fluent.**>
+      @type null
+    </match>
+    
     <source>
       @type tail
       format json
-      path "/var/log/containers/illumni*.log"
-      pos_file "/var/log/illumni.log.pos"
+      path /var/log/containers/*.log
+      pos_file /var/log/fluentd-containers.log.pos
       time_format %Y-%m-%dT%H:%M:%S.%NZ
-      tag "illumni.*"
+      tag kubernetes.*
+      read_from_head true
     </source>
 
     <match **>
       @type elasticsearch
-      host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
-      port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+      host elasticsearch-client.backoffice.svc.cluster.local
+      port 9200
       verify_es_version_at_startup false
       max_retry_get_es_version 1
       max_retry_putting_template 1
     </match>
+
+    <filter kubernetes.**>
+      @type kubernetes_metadata
+    </filter>
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: fluentd
-  namespace: illumni-app
+  namespace: kube-system
   labels:
     app: fluentd
 spec:
@@ -100,8 +109,18 @@ spec:
         volumeMounts:
         - name: fluentd-config
           mountPath: /fluentd/etc/
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
       volumes:
       - name: fluentd-config
         configMap:
           name: fluentd-config
-
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
