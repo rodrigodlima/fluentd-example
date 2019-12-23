@@ -67,8 +67,10 @@ data:
       max_retry_putting_template 1
       logstash_prefix fluentd.${tag}
       logstash_format true
-      include_timestamp
+      time_key_exclude_timestamp true
       time_key date
+      time_key_format %Y-%m-%dT%H:%M:%S.%N%z
+      utc_index false
     </match>
 
     <filter kubernetes.**>
