@@ -65,14 +65,10 @@ data:
       verify_es_version_at_startup false
       max_retry_get_es_version 1
       max_retry_putting_template 1
-      index_name fluentd.${tag}
-      <inject>
-        time_key log_time
-        time_type string
-        time_format %Y-%m-%dT%H:%M:%S.%NZ  
-        hostname_key hostname
-        hostname Socket.gethostname
-      </inject>
+      logstash_prefix fluentd.${tag}
+      logstash_format true
+      include_timestamp
+      time_key date
     </match>
 
     <filter kubernetes.**>
