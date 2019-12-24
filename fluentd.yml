@@ -47,13 +47,16 @@ data:
     <match fluent.**>
       @type null
     </match>
-    
+   
+    <match fluentd.*istio*>
+      @type null
+    </match> 
+
     <source>
       @type tail
       format json
       path /var/log/containers/illumni*.log
       pos_file /var/log/fluentd-containers.log.pos
-      time_format %Y-%m-%dT%H:%M:%S.%NZ
       tag illumni-test1.*
       read_from_head true
     </source>
@@ -69,8 +72,18 @@ data:
       logstash_format true
       time_key_exclude_timestamp true
       time_key date
-      time_key_format %Y-%m-%dT%H:%M:%S.%N%z
-      utc_index false
+      time_key_format %Y-%m-%dT%H:%M:%S
+      add_tag_prefix filtered
+    </match>
+
+    <match filtered.**>
+      @type grep
+      regexp1 Status-code\:\ 200\ Method\:\ GET\ URL\: \/api\/healthcheck
+      add_tag_prefix exclude_healthcheck
+    </match>
+
+    <match exclude_healthcheck>
+      @type null
     </match>
 
     <filter kubernetes.**>
