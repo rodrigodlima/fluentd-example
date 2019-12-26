@@ -68,11 +68,8 @@ data:
       verify_es_version_at_startup false
       max_retry_get_es_version 1
       max_retry_putting_template 1
-      logstash_format true
       index_name fluentd.${tag}
       logstash_prefix fluentd.${tag}
-      include_timestamp true
-      time_key_format %Y-%m-%dT%H:%M:%S.%N%z
     </match>
 
     <filter fluentd.**>
