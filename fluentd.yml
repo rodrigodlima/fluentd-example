@@ -73,10 +73,9 @@ data:
       time_key_exclude_timestamp true
       time_key date
       time_key_format %Y-%m-%dT%H:%M:%S
-      add_tag_prefix filtered
     </match>
 
-    <filter filtered>
+    <filter fluentd.**>
       @type grep
       <exclude>
         key healthcheck
