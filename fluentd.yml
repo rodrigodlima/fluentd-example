@@ -54,11 +54,22 @@ data:
 
     <source>
       @type tail
-      format json
       path /var/log/containers/illumni*.log
       pos_file /var/log/fluentd-containers.log.pos
       tag illumni-test1.*
       read_from_head true
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </pattern>
+        <pattern>
+          format /^(?<time>.+) (?<stream>stdout|stderr) [^ ]* (?<log>.*)$/
+          time_format %Y-%m-%dT%H:%M:%S.%N%:z
+        </pattern>
+      </parse>
     </source>
 
     <match **>
@@ -70,6 +81,7 @@ data:
       max_retry_putting_template 1
       index_name fluentd.${tag}
       logstash_prefix fluentd.${tag}
+      include_timestamp true
     </match>
 
     <filter fluentd.**>
