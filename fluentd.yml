@@ -76,11 +76,13 @@ data:
       add_tag_prefix filtered
     </match>
 
-    <match filtered.**>
+    <filter filtered>
       @type grep
-      regexp1 Status-code\:\ 200\ Method\:\ GET\ URL\: \/api\/healthcheck
-      add_tag_prefix exclude_healthcheck
-    </match>
+      <exclude>
+        key healthcheck
+        pattern /healthcheck/
+      </exclude>
+    </filter>
 
     <match exclude_healthcheck>
       @type null
