@@ -56,7 +56,7 @@ data:
       @type tail
       path /var/log/containers/illumni*.log
       pos_file /var/log/fluentd-containers.log.pos
-      tag illumni-test1.*
+      tag kubernetes.logs
       read_from_head true
       <parse>
         @type multi_format
@@ -72,6 +72,14 @@ data:
       </parse>
     </source>
 
+    <filter kubernetes.logs>
+      @type grep
+      <exclude>
+        key log
+        pattern /healthcheck/
+      </exclude>
+    </filter>
+
     <match **>
       @type elasticsearch
       host elasticsearch-client.backoffice.svc.cluster.local
@@ -84,21 +92,7 @@ data:
       include_timestamp true
     </match>
 
-    <filter fluentd.**>
-      @type grep
-      <exclude>
-        key healthcheck
-        pattern /healthcheck/
-      </exclude>
-    </filter>
-
-    <match exclude_healthcheck>
-      @type null
-    </match>
-
-    <filter kubernetes.**>
-      @type kubernetes_metadata
-    </filter>
+        
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
