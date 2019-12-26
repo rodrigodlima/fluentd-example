@@ -76,7 +76,7 @@ data:
       @type grep
       <exclude>
         key log
-        pattern /healthcheck/
+        pattern /Status-Code: 200 Method: GET URL: /api/healthcheck/
       </exclude>
     </filter>
 
